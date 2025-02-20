@@ -1,0 +1,11 @@
+provider: autogen_ext.models.openai.OpenAIChatCompletionClient
+config:
+  model: Qwen/Qwen2.5-Coder-32B-Instruct
+  base_url: https://api-inference.huggingface.co/v1/
+  api_key: ADD_API_KEY
+  temperature: 0
+  model_info:
+    vision: false
+    function_calling: true
+    json_output: true
+    family: unknown

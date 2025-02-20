@@ -1,0 +1,11 @@
+DATA_ANLYST_PROMPT = '''
+'''
+
+ADMIN_PROMOT = '''
+'''
+
+DATA_SCIENTIST_PROMPT = '''
+'''
+
+SQL_CODER = '''
+'''
