@@ -5,13 +5,16 @@ This project empowers autonomous agents to extract data from Sydonia and perform
 This project is a proof of concept and is not aimed for production.
 
 ## Table of Contents
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+- [OpenCustomsGPT](#opencustomsgpt)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Configuration](#configuration)
+  - [Project Structure](#project-structure)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Contact](#contact)
 
 ## Features
 - **Agent-Based Architecture:** Leverages autonomous agents to perform distributed tasks.
@@ -36,11 +39,17 @@ This project is a proof of concept and is not aimed for production.
    ```
 
 ## Usage
-To launch the Streamlit interface, run:
+
+To launch LiteLLM proxy :
 ```bash
-streamlit run src/app.py
+poetry run litellm --config configs/litellm/config.yaml
 ```
-After running the command, open your browser and navigate to the local URL provided by Streamlit.
+
+To launch the user interface, run:
+```bash
+poetry run chainlit run src/app.py
+```
+After running the command, open your browser and navigate to the URL `http://localhost:8000/`.
 
 ### Configuration
 Customize the project by editing the `config.yaml` file. Adjust agent parameters and UI settings as needed.

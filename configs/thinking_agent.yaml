@@ -1,11 +1,11 @@
 provider: autogen_ext.models.openai.OpenAIChatCompletionClient
 config:
-  model: deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-  base_url: https://api-inference.huggingface.co/v1/
-  api_key: ADD_API_KEY
+  model: DeepSeek-R1-Distill-Qwen-32B
+  base_url: http://0.0.0.0:4000/v1/
+  api_key: os.environ/HUGGINGFACE_API_KEY
   temperature: 0
   model_info:
     vision: false
     function_calling: true
-    json_output: true
+    json_output: false
     family: r1
