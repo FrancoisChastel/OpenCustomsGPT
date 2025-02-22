@@ -1,11 +1,10 @@
 provider: autogen_ext.models.openai.OpenAIChatCompletionClient
 config:
-  model: Qwen2.5-Coder-32B-Instruct
+  model: model-coder
   base_url: http://0.0.0.0:4000/v1/
-  api_key: os.environ/HUGGINGFACE_API_KEY
   temperature: 0
   model_info:
     vision: false
     function_calling: true
-    json_output: false
-    family: unknown
+    json_output: true
+    family: openai

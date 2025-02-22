@@ -1,14 +1,16 @@
 model_list:
-  - model_name: Qwen2.5-Coder-32B-Instruct
+  - model_name: model-coder
     litellm_params:
-      model: huggingface/Qwen/Qwen2.5-Coder-32B-Instruct
-      api_key: os.environ/HUGGINGFACE_API_KEY
-  - model_name: llama-3.1-8B-instruct
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: model-writer
     litellm_params:
-      model: huggingface/meta-llama/Meta-Llama-3.1-8B-Instruct
-      api_key: os.environ/HUGGINGFACE_API_KEY
-  - model_name: DeepSeek-R1-Distill-Qwen-32B
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+  - model_name: model-thinker
     litellm_params:
-      model: huggingface/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-      api_key: os.environ/HUGGINGFACE_API_KEY
-  
+      model: openai/o1-mi
+      api_key: os.environ/OPENAI_API_KEY
+
+
+
