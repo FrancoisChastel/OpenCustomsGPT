@@ -1,22 +1,32 @@
+import os
 from typing import List
 from typing import cast
 
 import chainlit as cl
+import pandas as pd
 from autogen_agentchat.base import TaskResult
 from autogen_agentchat.messages import ModelClientStreamingChunkEvent
 from autogen_agentchat.messages import TextMessage
 from autogen_agentchat.messages import ToolCallSummaryMessage
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core import CancellationToken
+from sqlalchemy import create_engine
+from sqlalchemy import text
 
+from agents import cache
+from agents.cache import init_cache
 from agents.setup import setup_group_chat
 from cache import init
 
 
+DB_URI = os.environ["DB_URI"]
+
+# Not the best practice but as we are mixing both frontend and backend logics in the same file, we need to initialize the cache here
+init_cache()
+      
 @cl.on_chat_start  # type: ignore
 async def start_chat() -> None:
-    init()
-    cl.user_session.set("sql_results", [])  # type: ignore
+    cl.user_session.set("dataframes", [])  # type: ignore
     cl.user_session.set("prompt_history", "")  # type: ignore
     cl.user_session.set("team", setup_group_chat())  # type: ignore
 
@@ -45,16 +55,16 @@ async def chat(message: cl.Message) -> None:
     tool_response: cl.Step | None = None
     step_response: cl.Step | None = None
     streaming_response: cl.Message | None = None
-
     async for msg in team.run_stream(
         task=[TextMessage(content=message.content, source="user")],
         cancellation_token=CancellationToken(),
     ):
         if isinstance(msg, ToolCallSummaryMessage):
-            with cl.Step(name=f"{msg.source.replace('_', ' ')} call summary", type="tool") as step:
-                step.output = msg.content
-        elif isinstance(msg, ModelClientStreamingChunkEvent):
-            if msg.source in ["data_analyst", "sql_coder"]:
+            await cl.Message(content=msg.content, author="tool").send()
+            await cl.Message(content=f"{cache.cached_variables['dataframes'][-1]}", author="tool").send()
+            await cl.Dataframe(cache.cached_variables["dataframes"][-1]).send(persist=True, for_id="1")
+        if isinstance(msg, ModelClientStreamingChunkEvent):
+            if msg.source in ["data_analyst", "sql_coder", "sql_executor"]:
                 if step_response is None:
                     step_response = cl.Step(name=f"{msg.source.replace('_', ' ')} agent")
                 await step_response.stream_token(msg.content)
@@ -71,10 +81,5 @@ async def chat(message: cl.Message) -> None:
         elif streaming_response is not None:
             await streaming_response.send()
             streaming_response = None
-        elif isinstance(msg, TaskResult):
-            final_message = "Task terminated."
-            if msg.stop_reason:
-                final_message += msg.stop_reason
-            await cl.Message(content=final_message).send()
         else:
             pass           

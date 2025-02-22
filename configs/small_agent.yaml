@@ -1,0 +1,10 @@
+provider: autogen_ext.models.openai.OpenAIChatCompletionClient
+config:
+  model: model-small
+  base_url: http://0.0.0.0:4000/v1/
+  temperature: 0
+  model_info:
+    vision: false
+    function_calling: true
+    json_output: true
+    family: openai

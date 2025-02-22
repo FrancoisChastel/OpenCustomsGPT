@@ -5162,6 +5162,21 @@ watchdog = {version = ">=2.1.5,<7", markers = "platform_system != \"Darwin\""}
 snowflake = ["snowflake-connector-python (>=3.3.0) ; python_version < \"3.12\"", "snowflake-snowpark-python[modin] (>=1.17.0) ; python_version < \"3.12\""]
 
 [[package]]
+name = "streamlit-pills"
+version = "0.3.0"
+description = "💊 A Streamlit component to show clickable pills/badges"
+optional = false
+python-versions = ">=3.8,<4.0"
+groups = ["main"]
+files = [
+    {file = "streamlit-pills-0.3.0.tar.gz", hash = "sha256:47668ad4fd8c137b203ee1aec9d9d44ed8b2ff7ded9f586984f204be2eac772f"},
+    {file = "streamlit_pills-0.3.0-py3-none-any.whl", hash = "sha256:b66fdf7b1820c09b751a76ef1ae01ab93221d0c2c2d1cd489b711b9afaae0513"},
+]
+
+[package.dependencies]
+streamlit = ">=1.12.0,<2.0.0"
+
+[[package]]
 name = "syncer"
 version = "2.0.3"
 description = "Async to sync converter"
@@ -6130,4 +6145,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.12"
-content-hash = "b4b70ea8c0e7dda01e82cbca325171104ed7ccf953b5b8dacaded067d129aeb9"
+content-hash = "ee60c8badac51c1eab0f58511024b8fd0408af6f4d96e263a921895abe9811e0"

@@ -29,6 +29,7 @@ langchain = "^0.3.19"
 langchain-community = "^0.3.18"
 litellm = {extras = ["proxy"], version = "^1.61.11"}
 psycopg2 = "^2.9.10"
+streamlit-pills = "^0.3.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

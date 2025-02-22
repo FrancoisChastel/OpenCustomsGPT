@@ -6,14 +6,16 @@ from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core.models import ChatCompletionClient
 
 import cache
+from agents.cache import init_cache
 from agents.prompts import ADMIN_PROMPT
 from agents.prompts import DATA_ANLYST_PROMPT
 from agents.prompts import SQL_EXECUTOR_PROMPT
 from agents.sql import get_sql_coder_prompt
-from agents.tools import ContextualTools
+from agents.tools import execute_sql
 
 
 def setup_group_chat() -> SelectorGroupChat:
+
   with open("configs/coder_agent.yaml", "r") as f:
       model_config = yaml.safe_load(f)
   coder_model = ChatCompletionClient.load_component(model_config)
@@ -26,7 +28,6 @@ def setup_group_chat() -> SelectorGroupChat:
       model_config = yaml.safe_load(f)
   thinking_client = ChatCompletionClient.load_component(model_config)
 
-  tools = ContextualTools(cache.cached_variables)
   sql_coder = AssistantAgent(
         name="sql_coder",
         model_client=coder_model,
@@ -38,7 +39,7 @@ def setup_group_chat() -> SelectorGroupChat:
       name="sql_executor",
       model_client=coder_model,
       tools=[
-          tools.execute_sql,
+          execute_sql,
       ],
       system_message=SQL_EXECUTOR_PROMPT,
       model_client_stream=True,
@@ -59,6 +60,4 @@ def setup_group_chat() -> SelectorGroupChat:
   )
   termination = TextMentionTermination("APPROVE", sources=["admin"])
 
-  return SelectorGroupChat([admin, data_analyst, sql_coder, sql_executor], termination_condition=termination, model_client=writer_model)
-  return SelectorGroupChat([admin, data_analyst, sql_coder, sql_executor], termination_condition=termination, model_client=writer_model)
   return SelectorGroupChat([admin, data_analyst, sql_coder, sql_executor], termination_condition=termination, model_client=writer_model)
