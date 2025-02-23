@@ -48,7 +48,7 @@ def serialize_variable(variable: Any) -> dict:
     if isinstance(variable, pd.DataFrame):
         variable.to_pickle(path)
         result = {
-            "path": str(path),
+            "file_path": str(path),
             "output_type": OutputType.PICKLED_DATAFRAME.value,
             "row_counts": variable.shape[0],
             "columns": variable.columns.tolist(),
@@ -57,7 +57,7 @@ def serialize_variable(variable: Any) -> dict:
         with open(path, "wb") as f:
             pickle.dump(variable, f)
         result = {
-            "path": str(path),
+            "file_path": str(path),
             "output_type": OutputType.PLOT.value,
             "library": VisualizationLibrary.PLOTLY.value,
         }

@@ -9,4 +9,4 @@ def init_cache():
   cached_variables = {
     "dataframes": dataframes,
     "dataframe_counter": 0,
-  }
+  }  

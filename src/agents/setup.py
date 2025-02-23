@@ -54,15 +54,13 @@ def setup_group_chat() -> TrackableGroupChatManager:
       system_message=CODE_WRITER_PROMPT,
       model_client_stream=True,
   )
-
-
+  
   code_executor = CodeExecutorAgent(
       name="code_executor",
       code_executor=DataAwareExecutor(work_dir=Path(EXECUTION_WORK_DIR)),
       description="You run python code that should be provided to you by code_writer, if you don't have it, ask for it.",
       sources=["code_writer"],
   )
-
 
   admin = AssistantAgent(
       name="admin",

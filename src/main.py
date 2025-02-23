@@ -34,13 +34,21 @@ def main() -> None:
         st.session_state["loop"] = asyncio.new_event_loop()
     if "can_write" not in st.session_state:
         st.session_state["can_write"] = True
+    if "suggestion" not in st.session_state:
+        st.session_state["suggestion"] = None
+    if "suggestion_pill" not in st.session_state:
+        st.session_state["suggestion_pill"] = None
     
     prompt = st.chat_input("Type a message...", disabled=not(st.session_state.can_write))
 
-    options = ["Give me the biggest importer", "Write me an SQL query to get all the countries of origins", "Plot a bar chart for the biggest importer of hscode starting with 1511"]
-    selection = st.pills("Example", options, selection_mode="single")
+    def on_selected_suggestion():
+      st.session_state.suggestion = st.session_state.suggestion_pill
+      st.session_state.suggestion_pill = None
 
-    prompt = selection if selection else prompt
+    options = ["Give me the biggest importer", "Write me an SQL query to get all the countries of origins", "Plot a bar chart for the 20 biggest importer of hscode starting with 1511"]
+    st.pills("Example", options, selection_mode="single", on_change=on_selected_suggestion, key="suggestion_pill")
+
+    prompt = st.session_state["suggestion"] if st.session_state["suggestion"] is not None else prompt
 
     for message_shape in st.session_state.messages:
       render_message(message_shape)
@@ -54,7 +62,7 @@ def main() -> None:
             cancellation_token=CancellationToken(),
         ))
         st.session_state.can_write = True
-        selection = None
+        st.session_state["suggestion"] = None
         prompt = None
 
 

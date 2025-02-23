@@ -2,6 +2,8 @@ import json
 import pickle
 from io import StringIO
 from pathlib import Path
+from pyclbr import Function
+from typing import List
 from typing import Sequence
 
 import pandas
@@ -51,48 +53,40 @@ class TrackableGroupChatManager(SelectorGroupChat):
         
         
 def render_message(message: AgentEvent | ChatMessage | TaskResult) -> None:
+    
     if isinstance(message, TextMessage):
         if message.source in ["user", "admin"]:
           MainMesage(author=message.source, content=message.content).render()
         elif message.source in ["code_executor"]:
-          variables = json.loads(message.content)
-          
-          for variable in variables:
-            if variable.get("type") == "dataframe":
-              DataFrameMessage(author=message.source, dataframe=pandas.DataFrame(variable.get("data", {}))).render()
-            elif variable.get("type") == "plotly":
-              PlotlyMessage(author=message.source, figure=variable.get("data")).render()
-            else:
-              AgentMessage(author=message.source, content=message.content).render()
-
-          
-
-          # A bit hacky, we should intercept the renderer loop in case of figure rendering
-          # The next good step is to go away from streamlit and use react+flask. 
-          # Time limitations made me use streamlit as a quick solution.
-          pickel_path = Path("run_tmp") / message.content.strip()
-          print(pickel_path.name.endswith(".pkl"))
-          if pickel_path.name.endswith(".pkl"):
-            with open(pickel_path, "rb") as f:
-                code_executor = pickle.load(f)
-                PlotlyMessage(author=message.source, figure=code_executor).render()
+          print(message.content, message.source, type(message.content))
+          if message.content.startswith("["):
+            render_serialize_variable(json.loads(message.content))
           else:
             AgentMessage(author=message.source, content=message.content).render()
         else:
           AgentMessage(author=message.source, content=message.content).render()
     elif isinstance(message, ToolCallSummaryMessage):
-        print(message.content)
         function_results = json.loads(message.content)
         if message.source == "sql_executor":
             for result in function_results:
               variables = result.get("variables", {})
               output_type = variables.get("output_type", OutputType.UNKNOWN.value)
               if output_type == OutputType.PICKLED_DATAFRAME.value:
-                  dataframe = pd.read_pickle(Path(EXECUTION_WORK_DIR) / variables.get("path", ""))
+                  dataframe = pd.read_pickle(Path(EXECUTION_WORK_DIR) / variables.get("file_path", ""))
                   DataFrameMessage(author=message.source, dataframe=dataframe).render()
-              elif output_type == OutputType.DATAFRAME.value:
-                  DataFrameMessage(author=message.source, dataframe=pandas.DataFrame(variables.get("data", {}))).render()
               else: 
                   FunctionMessage(author=message.source, results=message.content).render()
         else:
             FunctionMessage(author=message.source, results=message.content).render()
+
+def render_serialize_variable(content: List[dict]) -> None:
+    for variable in content:
+        if variable.get("output_type") == OutputType.PICKLED_DATAFRAME.value:
+            dataframe = pd.read_pickle(Path(EXECUTION_WORK_DIR) / variable.get("file_path", ""))
+            DataFrameMessage(author="code_executor", dataframe=dataframe).render()
+        elif variable.get("output_type") == OutputType.PLOT.value:
+            with open(Path(EXECUTION_WORK_DIR) / variable.get("file_path", ""), "rb") as f:
+                figure = pickle.load(f)
+                PlotlyMessage(author="code_executor", figure=figure).render()
+        else:
+            FunctionMessage(author="code_executor", results=json.dumps(variable)).render()

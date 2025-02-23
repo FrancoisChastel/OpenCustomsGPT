@@ -1,1 +1,1 @@
-EXECUTION_WORK_DIR = "src/work_dir"
+EXECUTION_WORK_DIR = "work_dir"

@@ -1,20 +1,28 @@
-FROM python:3.9-slim
+# The builder image, used to build the virtual environment
+FROM python:3.10-buster as builder
+
+RUN pip install poetry==1.4.2
+
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    software-properties-common \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+COPY pyproject.toml poetry.lock ./
+RUN touch README.md
 
-RUN git clone https://github.com/streamlit/streamlit-example.git .
+RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
-RUN pip3 install -r requirements.txt
+# The runtime image, used to just run the code provided its virtual environment
+FROM python:3.11-slim-buster as runtime
 
-EXPOSE 8501
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH"
 
-HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+COPY annapurna ./annapurna
+
+ENTRYPOINT ["python", "-m", "annapurna.main"]

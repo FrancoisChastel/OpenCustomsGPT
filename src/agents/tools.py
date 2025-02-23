@@ -54,7 +54,7 @@ def serialize_variable(variable: Any) -> dict:
     if isinstance(variable, pd.DataFrame):
         variable.to_pickle(path)
         result = {
-            "path": str(relative_path),
+            "file_path": str(relative_path),
             "output_type": OutputType.PICKLED_DATAFRAME.value,
             "row_counts": variable.shape[0],
             "columns": variable.columns.tolist(),
@@ -63,7 +63,7 @@ def serialize_variable(variable: Any) -> dict:
         with open(path, "wb") as f:
             pickle.dump(variable, f)
         result = {
-            "path": str(relative_path),
+            "file_path": str(relative_path),
             "output_type": OutputType.PLOT.value,
             "library": VisualizationLibrary.PLOTLY.value,
         }
@@ -97,7 +97,7 @@ def execute_sql(sql_query: str) -> str:
     return json.dumps([{
         "message": "Data are accessible from the dataframe at the path provided in a pickled file",
         "variables": {
-            "path": str(relative_df_file_path),
+            "file_path": str(relative_df_file_path),
             "columns": df.columns.tolist(),
             "output_type": OutputType.PICKLED_DATAFRAME.value
         },

@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from streamlit.elements.plotly_chart import FigureOrData
+from plotly.graph_objs import Figure
 
 
 class Message:
@@ -48,7 +48,7 @@ class FunctionMessage(Message):
             st.json(self.results)
 
 class PlotlyMessage(Message):
-    def __init__(self, author: str, figure: FigureOrData):
+    def __init__(self, author: str, figure: Figure):
         super().__init__(author)
         self.figure = figure
     
