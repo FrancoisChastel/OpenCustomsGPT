@@ -3,6 +3,7 @@ config:
   model: model-coder
   base_url: http://0.0.0.0:4000/v1/
   temperature: 0
+  cache_seed: 42
   model_info:
     vision: false
     function_calling: true

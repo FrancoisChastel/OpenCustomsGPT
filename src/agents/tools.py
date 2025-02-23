@@ -1,7 +1,7 @@
 import os
 
-import chainlit as cl
 import pandas as pd
+import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy import text
 
@@ -28,6 +28,6 @@ def execute_sql(sql_query: str) -> str:
             return "No results found with the given query. Try to fix the query."
         else:
             if len(df) > 10:
-                return f"Trimmed only to get the first 10 df: {df.head(10).to_string()}, the complete df not displayed but accessible inside the user_session.get('sql_results')."
+                return f"Trimmed only to get the first 10 df: {df.head(10).to_string()}, the complete df not displayed but accessible inside the df in the cache, all agents can use it."
             else:
-                return df.to_string()
+                return df.to_markdown()

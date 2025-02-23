@@ -1,20 +1,22 @@
-import chainlit as cl
+from pathlib import Path
+
 import yaml
 from autogen_agentchat.agents import AssistantAgent
+from autogen_agentchat.agents import CodeExecutorAgent
 from autogen_agentchat.conditions import TextMentionTermination
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core.models import ChatCompletionClient
 
-import cache
-from agents.cache import init_cache
+from agents.executor import DataAwareExecutor
 from agents.prompts import ADMIN_PROMPT
 from agents.prompts import DATA_ANLYST_PROMPT
 from agents.prompts import SQL_EXECUTOR_PROMPT
 from agents.sql import get_sql_coder_prompt
 from agents.tools import execute_sql
+from render.agents import TrackableGroupChatManager
 
 
-def setup_group_chat() -> SelectorGroupChat:
+def setup_group_chat() -> TrackableGroupChatManager:
 
   with open("configs/coder_agent.yaml", "r") as f:
       model_config = yaml.safe_load(f)
@@ -46,11 +48,20 @@ def setup_group_chat() -> SelectorGroupChat:
   )
 
   data_analyst = AssistantAgent(
-      name="data_analyst",
+      name="code_writer",
       model_client=thinking_client,
       system_message=DATA_ANLYST_PROMPT,
       model_client_stream=True,
   )
+
+
+  code_executor = CodeExecutorAgent(
+      name="code_executor",
+      code_executor=DataAwareExecutor(work_dir=Path("run_tmp/")),
+      description="You run python code that should be provided to you by code_writer, if you don't have it, ask for it.",
+      sources=["code_writer"],
+  )
+
 
   admin = AssistantAgent(
       name="admin",
@@ -60,4 +71,4 @@ def setup_group_chat() -> SelectorGroupChat:
   )
   termination = TextMentionTermination("APPROVE", sources=["admin"])
 
-  return SelectorGroupChat([admin, data_analyst, sql_coder, sql_executor], termination_condition=termination, model_client=writer_model)
+  return TrackableGroupChatManager([admin, data_analyst, sql_coder, sql_executor, code_executor], termination_condition=termination, model_client=writer_model)

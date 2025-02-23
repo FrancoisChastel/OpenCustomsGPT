@@ -12,6 +12,7 @@ from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core import CancellationToken
 from sqlalchemy import create_engine
 from sqlalchemy import text
+from streamlit import dataframe
 
 from agents import cache
 from agents.cache import init_cache
@@ -53,20 +54,22 @@ async def chat(message: cl.Message) -> None:
     team = cast(SelectorGroupChat, cl.user_session.get("team"))  # type: ignore
 
     tool_response: cl.Step | None = None
-    step_response: cl.Step | None = None
+    step_response: cl.Message | None = None
     streaming_response: cl.Message | None = None
     async for msg in team.run_stream(
         task=[TextMessage(content=message.content, source="user")],
         cancellation_token=CancellationToken(),
     ):
         if isinstance(msg, ToolCallSummaryMessage):
-            await cl.Message(content=msg.content, author="tool").send()
-            await cl.Message(content=f"{cache.cached_variables['dataframes'][-1]}", author="tool").send()
-            await cl.Dataframe(cache.cached_variables["dataframes"][-1]).send(persist=True, for_id="1")
-        if isinstance(msg, ModelClientStreamingChunkEvent):
+            await cl.Message(content=msg.source).send()
+            if msg.source == "sql_executor":
+              if "dataframes" in cache.cached_variables and len(cache.cached_variables["dataframes"]) > 0:
+                elements = [cl.Dataframe(data=cache.cached_variables["dataframes"][-1], display="inline", name="Dataframe")]
+                await cl.Message(content="Result from tool calling", elements=elements).send()                
+        elif isinstance(msg, ModelClientStreamingChunkEvent):
             if msg.source in ["data_analyst", "sql_coder", "sql_executor"]:
                 if step_response is None:
-                    step_response = cl.Step(name=f"{msg.source.replace('_', ' ')} agent")
+                    step_response = cl.Message(content="", author=msg.source)
                 await step_response.stream_token(msg.content)
             else:
               if streaming_response is None:
