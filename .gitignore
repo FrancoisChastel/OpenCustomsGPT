@@ -27,6 +27,7 @@ share/python-wheels/
 MANIFEST
 *.ipnyb
 tmp/
+run_tmp/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
