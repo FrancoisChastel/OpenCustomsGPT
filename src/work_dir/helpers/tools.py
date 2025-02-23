@@ -16,12 +16,8 @@ from sqlalchemy import create_engine
 from sqlalchemy import text
 from streamlit.elements.plotly_chart import FigureOrData
 
-from agents import cache
-from agents.setup import EXECUTION_WORK_DIR
-
 
 DB_URI = os.environ["DB_URI"]
-
 
 class FunctionResult(Enum):
     FAILED = "FAILED"
@@ -47,14 +43,12 @@ def serialize_variables(variables: List[Any]) -> str:
 
 def serialize_variable(variable: Any) -> dict:
     """Serialize results to JSON."""
-    cache.cached_variables["counter"] += 1
-    path = Path(EXECUTION_WORK_DIR) / f"var_{cache.cached_variables['counter']}.pkl"
-    relative_path = path.relative_to(EXECUTION_WORK_DIR)
+    path = f"var_{uuid.uuid4()}.pkl"
 
     if isinstance(variable, pd.DataFrame):
         variable.to_pickle(path)
         result = {
-            "path": str(relative_path),
+            "path": str(path),
             "output_type": OutputType.PICKLED_DATAFRAME.value,
             "row_counts": variable.shape[0],
             "columns": variable.columns.tolist(),
@@ -63,7 +57,7 @@ def serialize_variable(variable: Any) -> dict:
         with open(path, "wb") as f:
             pickle.dump(variable, f)
         result = {
-            "path": str(relative_path),
+            "path": str(path),
             "output_type": OutputType.PLOT.value,
             "library": VisualizationLibrary.PLOTLY.value,
         }
@@ -73,33 +67,4 @@ def serialize_variable(variable: Any) -> dict:
             "output_type": OutputType.UNKNOWN.value,
         }
     return result
-
-
-# Example of data interaction using tool calling
-def execute_sql(sql_query: str) -> str:
-    """Execute SQL query and retrieve results."""
-    sql_query = " ".join(sql_query.split())
-    engine = create_engine(DB_URI)
-    
-    with engine.connect() as connection:
-        df = pd.read_sql_query(text(sql_query), connection)
-        
-    cache.cached_variables["dataframes"].append(df)
-    cache.cached_variables["dataframe_counter"] += 1
-    df_file_path = Path(EXECUTION_WORK_DIR) / f"df_{cache.cached_variables['dataframe_counter']}.pkl"
-    df.to_pickle(df_file_path)
-    
-    if df.empty:
-        return json.dumps([{"message": "No data found", "result": FunctionResult.NO_RESULT.value}])
-    
-    relative_df_file_path = df_file_path.relative_to(EXECUTION_WORK_DIR)
-    
-    return json.dumps([{
-        "message": "Data are accessible from the dataframe at the path provided in a pickled file",
-        "variables": {
-            "path": str(relative_df_file_path),
-            "columns": df.columns.tolist(),
-            "output_type": OutputType.PICKLED_DATAFRAME.value
-        },
-        "result": FunctionResult.SUCCESS.value
-    }])      
+    return result

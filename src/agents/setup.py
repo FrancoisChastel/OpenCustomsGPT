@@ -7,9 +7,10 @@ from autogen_agentchat.conditions import TextMentionTermination
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core.models import ChatCompletionClient
 
+from agents.config import EXECUTION_WORK_DIR
 from agents.executor import DataAwareExecutor
 from agents.prompts import ADMIN_PROMPT
-from agents.prompts import DATA_ANLYST_PROMPT
+from agents.prompts import CODE_WRITER_PROMPT
 from agents.prompts import SQL_EXECUTOR_PROMPT
 from agents.sql import get_sql_coder_prompt
 from agents.tools import execute_sql
@@ -47,17 +48,17 @@ def setup_group_chat() -> TrackableGroupChatManager:
       model_client_stream=True,
   )
 
-  data_analyst = AssistantAgent(
+  code_writer = AssistantAgent(
       name="code_writer",
       model_client=thinking_client,
-      system_message=DATA_ANLYST_PROMPT,
+      system_message=CODE_WRITER_PROMPT,
       model_client_stream=True,
   )
 
 
   code_executor = CodeExecutorAgent(
       name="code_executor",
-      code_executor=DataAwareExecutor(work_dir=Path("run_tmp/")),
+      code_executor=DataAwareExecutor(work_dir=Path(EXECUTION_WORK_DIR)),
       description="You run python code that should be provided to you by code_writer, if you don't have it, ask for it.",
       sources=["code_writer"],
   )
@@ -65,10 +66,10 @@ def setup_group_chat() -> TrackableGroupChatManager:
 
   admin = AssistantAgent(
       name="admin",
-      model_client=writer_model,
+      model_client=thinking_client,
       system_message=ADMIN_PROMPT,
       model_client_stream=True,
   )
   termination = TextMentionTermination("APPROVE", sources=["admin"])
 
-  return TrackableGroupChatManager([admin, data_analyst, sql_coder, sql_executor, code_executor], termination_condition=termination, model_client=writer_model)
+  return TrackableGroupChatManager([admin, code_writer, sql_coder, sql_executor, code_executor], termination_condition=termination, model_client=writer_model)

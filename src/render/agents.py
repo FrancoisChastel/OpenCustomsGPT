@@ -1,3 +1,4 @@
+import json
 import pickle
 from io import StringIO
 from pathlib import Path
@@ -16,6 +17,9 @@ from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core import CancellationToken
 from streamlit.runtime.state import SessionStateProxy
 
+from agents.config import EXECUTION_WORK_DIR
+from agents.tools import FunctionResult
+from agents.tools import OutputType
 from render.messages import AgentMessage
 from render.messages import DataFrameMessage
 from render.messages import FunctionMessage
@@ -51,6 +55,18 @@ def render_message(message: AgentEvent | ChatMessage | TaskResult) -> None:
         if message.source in ["user", "admin"]:
           MainMesage(author=message.source, content=message.content).render()
         elif message.source in ["code_executor"]:
+          variables = json.loads(message.content)
+          
+          for variable in variables:
+            if variable.get("type") == "dataframe":
+              DataFrameMessage(author=message.source, dataframe=pandas.DataFrame(variable.get("data", {}))).render()
+            elif variable.get("type") == "plotly":
+              PlotlyMessage(author=message.source, figure=variable.get("data")).render()
+            else:
+              AgentMessage(author=message.source, content=message.content).render()
+
+          
+
           # A bit hacky, we should intercept the renderer loop in case of figure rendering
           # The next good step is to go away from streamlit and use react+flask. 
           # Time limitations made me use streamlit as a quick solution.
@@ -65,15 +81,18 @@ def render_message(message: AgentEvent | ChatMessage | TaskResult) -> None:
         else:
           AgentMessage(author=message.source, content=message.content).render()
     elif isinstance(message, ToolCallSummaryMessage):
+        print(message.content)
+        function_results = json.loads(message.content)
         if message.source == "sql_executor":
-            # We should always use text as a way to render the message as these are streamlit limitations.
-            # Some more engineering is needed to make the rendering more dynamic.
-            # But I suggest once again to go away from streamlit and use react+flask.
-            if message.content.startswith("|"):
-              dataframe = pd.read_table(StringIO(message.content), sep="|", header=0, index_col=1, skipinitialspace=True).dropna(axis=1, how='all').iloc[1:]
-              DataFrameMessage(author=message.source, dataframe=dataframe).render()
-            else: 
-               FunctionMessage(author=message.source, results=message.content).render()
+            for result in function_results:
+              variables = result.get("variables", {})
+              output_type = variables.get("output_type", OutputType.UNKNOWN.value)
+              if output_type == OutputType.PICKLED_DATAFRAME.value:
+                  dataframe = pd.read_pickle(Path(EXECUTION_WORK_DIR) / variables.get("path", ""))
+                  DataFrameMessage(author=message.source, dataframe=dataframe).render()
+              elif output_type == OutputType.DATAFRAME.value:
+                  DataFrameMessage(author=message.source, dataframe=pandas.DataFrame(variables.get("data", {}))).render()
+              else: 
+                  FunctionMessage(author=message.source, results=message.content).render()
         else:
-          FunctionMessage(author=message.source, results=message.content).render()
-          FunctionMessage(author=message.source, results=message.content).render()
+            FunctionMessage(author=message.source, results=message.content).render()

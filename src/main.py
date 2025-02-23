@@ -32,9 +32,10 @@ def main() -> None:
         st.session_state["team"] = setup_group_chat()
     if "loop" not in st.session_state:
         st.session_state["loop"] = asyncio.new_event_loop()
+    if "can_write" not in st.session_state:
+        st.session_state["can_write"] = True
     
-    
-    prompt = st.chat_input("Type a message...")
+    prompt = st.chat_input("Type a message...", disabled=not(st.session_state.can_write))
 
     options = ["Give me the biggest importer", "Write me an SQL query to get all the countries of origins", "Plot a bar chart for the biggest importer of hscode starting with 1511"]
     selection = st.pills("Example", options, selection_mode="single")
@@ -44,6 +45,7 @@ def main() -> None:
     for message_shape in st.session_state.messages:
       render_message(message_shape)
     if prompt is not None:
+        st.session_state.can_write = False
         team = cast(TrackableGroupChatManager, st.session_state["team"])
         loop = cast(asyncio.AbstractEventLoop, st.session_state["loop"])
         loop.run_until_complete(team.run(
@@ -51,6 +53,9 @@ def main() -> None:
             task=[TextMessage(content=prompt, source="user")],
             cancellation_token=CancellationToken(),
         ))
+        st.session_state.can_write = True
+        selection = None
+        prompt = None
 
 
 

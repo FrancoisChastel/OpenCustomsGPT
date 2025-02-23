@@ -45,7 +45,7 @@ class FunctionMessage(Message):
     
     def render(self):
         with st.expander(f"See results the excuted function ```{self.author}```"):
-            st.markdown(self.results)
+            st.json(self.results)
 
 class PlotlyMessage(Message):
     def __init__(self, author: str, figure: FigureOrData):
