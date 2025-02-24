@@ -27,7 +27,6 @@ dist/
 # Docs
 *.md
 README*
-LICENSE*
 docs/
 
 # Docker
