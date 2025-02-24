@@ -35,6 +35,12 @@ OpenCustomsGPT is an advanced open-source tool designed to interact with Sydonia
   - Modular design for easy extensions
   - Multi-LLM provider support through LiteLLM
   - Scalable for different customs office needs
+ 
+## Examples
+
+https://github.com/user-attachments/assets/66016a59-2998-4501-a233-f305d6a86cb9
+
+https://github.com/user-attachments/assets/223cebfa-d602-44eb-baad-e1f763a4ef2d
 
 ## Prerequisites
 
