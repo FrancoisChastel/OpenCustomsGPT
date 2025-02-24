@@ -18,7 +18,7 @@ class AgentMessage(Message):
     
     def render(self):
         with st.expander(f"{self.author} has spoken"):
-            st.markdown(self.content)
+            st.markdown(self.content.strip())
 
 class MainMesage(Message):
     def __init__(self, author: str, content: str):
@@ -27,7 +27,7 @@ class MainMesage(Message):
     
     def render(self):
         with st.chat_message(self.author):
-            st.markdown(self.content.replace("APPROVE", ""))
+            st.markdown(self.content.replace("APPROVE.", "").replace("APPROVE", "").strip())
 
 class DataFrameMessage(Message):
     def __init__(self, author: str, dataframe: pd.DataFrame):
