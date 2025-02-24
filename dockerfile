@@ -26,10 +26,14 @@ ENV VIRTUAL_ENV=/app/.venv \
 WORKDIR /app
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-    
+
 COPY src ./src
 COPY configs ./configs
 COPY work_dir ./work_dir
+
+RUN pyarmor gen src/ && \
+    rm -rf src/ && \
+    mv dist/* .
 
 # CMD ["python", "-m", "main"]
 # Copy supervisord configuration file
