@@ -16,13 +16,22 @@ RUN touch README.md
 RUN poetry install --without dev --no-root && rm -rf $POETRY_CACHE_DIR
 
 # The runtime image, used to just run the code provided its virtual environment
-FROM python:3.11-slim-buster as runtime
+FROM python:3.10-slim-buster as runtime
+
+RUN apt-get update && apt-get install -y supervisor
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+    
+COPY src ./src
+COPY configs ./configs
+COPY work_dir ./work_dir
 
-COPY annapurna ./annapurna
+# CMD ["python", "-m", "main"]
+# Copy supervisord configuration file
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-ENTRYPOINT ["python", "-m", "annapurna.main"]
+# Run supervisord
+CMD ["/usr/bin/supervisord"]
