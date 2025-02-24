@@ -82,28 +82,33 @@ def serialize_variable(variable: Any) -> dict:
 # Example of data interaction using tool calling
 def execute_sql(sql_query: str) -> str:
     """Execute SQL query and retrieve results."""
-    sql_query = " ".join(sql_query.split())
-    engine = create_engine(DB_URI)
-    
-    with engine.connect() as connection:
-        df = pd.read_sql_query(text(sql_query), connection)
+    try:
+        sql_query = " ".join(sql_query.split())
+        engine = create_engine(DB_URI)
         
-    cache.cached_variables["dataframes"].append(df)
-    cache.cached_variables["dataframe_counter"] += 1
-    df_file_path = Path(EXECUTION_WORK_DIR) / f"df_{cache.cached_variables['dataframe_counter']}.pkl"
-    df.to_pickle(df_file_path)
-    
-    if df.empty:
-        return json.dumps([{"message": "No data found", "result": FunctionResult.NO_RESULT.value}])
-    
-    relative_df_file_path = df_file_path.relative_to(EXECUTION_WORK_DIR)
-    
-    return json.dumps([{
-        "message": "Data are accessible from the dataframe at the path provided in a pickled file",
-        "variables": {
-            "file_path": str(relative_df_file_path),
-            "columns": df.columns.tolist(),
-            "output_type": OutputType.PICKLED_DATAFRAME.value
-        },
-        "result": FunctionResult.SUCCESS.value
-    }])      
+        with engine.connect() as connection:
+            df = pd.read_sql_query(text(sql_query), connection)
+            
+        cache.cached_variables["dataframes"].append(df)
+        cache.cached_variables["dataframe_counter"] += 1
+        df_file_path = Path(EXECUTION_WORK_DIR) / f"df_{cache.cached_variables['dataframe_counter']}.pkl"
+        df.to_pickle(df_file_path)
+        
+        if df.empty:
+            return json.dumps([{"message": "No data found", "result": FunctionResult.NO_RESULT.value}])
+        
+        relative_df_file_path = df_file_path.relative_to(EXECUTION_WORK_DIR)
+        
+        return json.dumps([{
+            "message": "Data are accessible from the dataframe at the path provided in a pickled file",
+            "variables": {
+                "file_path": str(relative_df_file_path),
+                "columns": df.columns.tolist(),
+                "output_type": OutputType.PICKLED_DATAFRAME.value,
+                "first_10_rows": df.head(10).to_dict(),
+                "row_counts": df.shape[0]
+            },
+            "result": FunctionResult.SUCCESS.value
+        }])  
+    except Exception as e:
+        return json.dumps([{"message": str(e), "result": FunctionResult.FAILED.value}])

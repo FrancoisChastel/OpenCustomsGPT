@@ -56,6 +56,17 @@ def serialize_variable(variable: Any) -> dict:
             "output_type": OutputType.PICKLED_DATAFRAME.value,
             "row_counts": variable.shape[0],
             "columns": variable.columns.tolist(),
+            "first_10_rows": variable.head(10).to_dict(),
+        }
+    elif isinstance(variable, pd.Series):
+        variable = variable.to_frame()
+        variable.to_pickle(path)
+        result = {
+            "file_path": str(path),
+            "output_type": OutputType.PICKLED_DATAFRAME.value,
+            "row_counts": variable.shape[0],
+            "columns": variable.columns.tolist(),
+            "first_10_rows": variable.head(10).to_dict(),
         }
     elif isinstance(variable, Figure):
         with open(path, "wb") as f:
@@ -67,8 +78,7 @@ def serialize_variable(variable: Any) -> dict:
         }
     else:
         result = {
-            "message": "Unknown variable type",
+            "message": "Unknown variable type, only pandas DataFrame, Series and plotly Figure are supported",
             "output_type": OutputType.UNKNOWN.value,
         }
-    return result
     return result

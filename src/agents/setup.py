@@ -22,7 +22,6 @@ from render.agents import TrackableGroupChatManager
 
 
 def setup_group_chat() -> TrackableGroupChatManager:
-
   with open("configs/coder_agent.yaml", "r") as f:
       model_config = yaml.safe_load(f)
   coder_model = ChatCompletionClient.load_component(model_config)
