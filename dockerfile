@@ -23,6 +23,8 @@ RUN apt-get update && apt-get install -y supervisor
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
+WORKDIR /app
+
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
     
 COPY src ./src
@@ -32,6 +34,10 @@ COPY work_dir ./work_dir
 # CMD ["python", "-m", "main"]
 # Copy supervisord configuration file
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+EXPOSE 8501
+
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
 
 # Run supervisord
 CMD ["/usr/bin/supervisord"]

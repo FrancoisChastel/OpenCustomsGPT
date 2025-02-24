@@ -19,7 +19,7 @@ if "cache" not in st.session_state:
     st.session_state["cache"] = cache.cached_variables
 
 def main() -> None:
-    st.set_page_config(page_title="OpenCustomsGPT - Discuss with Sydonia's data", page_icon="🤖")
+    st.set_page_config(page_title="OpenCustomsGPT - Discuss with Sydonia's data", page_icon="🚀")
     st.title("OpenCustomsGPT")
 
     if "dataframes" not in st.session_state:
