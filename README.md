@@ -8,6 +8,7 @@ OpenCustomsGPT is an advanced open-source tool designed to interact with Sydonia
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
   - [Prerequisites](#prerequisites)
+  - [Examples](#examples)
   - [Installation](#installation)
     - [Production](#production)
     - [Development](#development)
@@ -44,6 +45,12 @@ OpenCustomsGPT is an advanced open-source tool designed to interact with Sydonia
 - Poetry for dependency management
 - PostgreSQL database
 - OpenAI API key or other supported LLM provider credentials
+
+## Examples
+
+https://github.com/user-attachments/assets/66016a59-2998-4501-a233-f305d6a86cb9
+
+https://github.com/user-attachments/assets/223cebfa-d602-44eb-baad-e1f763a4ef2d
 
 ## Installation
 
