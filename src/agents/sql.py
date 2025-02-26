@@ -1,11 +1,17 @@
+# Copyright (C) Francois Chastel - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Francois Chastel <francois@chastel.co>, February 2024
+import os
 
 from agents.prompts import SQL_CODER_PROMPT
-from agents.schema import SAD_GEN_SCHEMA
-from agents.schema import SAD_ITEM_SCHEMA
 
 
 def get_sql_coder_prompt() -> str:
     return SQL_CODER_PROMPT.format(db_schema=get_schema())
 
 def get_schema() -> str:
-    return f"{SAD_GEN_SCHEMA}\n{SAD_ITEM_SCHEMA}" 
+    schema_path = os.path.join(os.path.dirname(__file__), "../data_schema/tmp/schema.txt")
+    with open(schema_path, "r") as f:
+        schema = f.read()
+    return schema

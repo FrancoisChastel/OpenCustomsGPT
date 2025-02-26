@@ -1,21 +1,27 @@
-import chainlit as cl
+# Copyright (C) Francois Chastel - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Francois Chastel <francois@chastel.co>, February 2024
+from pathlib import Path
+
 import yaml
 from autogen_agentchat.agents import AssistantAgent
+from autogen_agentchat.agents import CodeExecutorAgent
 from autogen_agentchat.conditions import TextMentionTermination
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_core.models import ChatCompletionClient
 
-import cache
-from agents.cache import init_cache
+from agents.config import EXECUTION_WORK_DIR
+from agents.executor import DataAwareExecutor
 from agents.prompts import ADMIN_PROMPT
-from agents.prompts import DATA_ANLYST_PROMPT
+from agents.prompts import CODE_WRITER_PROMPT
 from agents.prompts import SQL_EXECUTOR_PROMPT
 from agents.sql import get_sql_coder_prompt
 from agents.tools import execute_sql
+from render.agents import TrackableGroupChatManager
 
 
-def setup_group_chat() -> SelectorGroupChat:
-
+def setup_group_chat() -> TrackableGroupChatManager:
   with open("configs/coder_agent.yaml", "r") as f:
       model_config = yaml.safe_load(f)
   coder_model = ChatCompletionClient.load_component(model_config)
@@ -28,9 +34,13 @@ def setup_group_chat() -> SelectorGroupChat:
       model_config = yaml.safe_load(f)
   thinking_client = ChatCompletionClient.load_component(model_config)
 
+  with open("configs/sql_agent.yaml", "r") as f:
+      model_config = yaml.safe_load(f)
+  sql_client = ChatCompletionClient.load_component(model_config)
+
   sql_coder = AssistantAgent(
         name="sql_coder",
-        model_client=coder_model,
+        model_client=sql_client,
         system_message=get_sql_coder_prompt(),
         model_client_stream=True,
     )
@@ -45,19 +55,26 @@ def setup_group_chat() -> SelectorGroupChat:
       model_client_stream=True,
   )
 
-  data_analyst = AssistantAgent(
-      name="data_analyst",
+  code_writer = AssistantAgent(
+      name="code_writer",
       model_client=thinking_client,
-      system_message=DATA_ANLYST_PROMPT,
+      system_message=CODE_WRITER_PROMPT,
       model_client_stream=True,
+  )
+  
+  code_executor = CodeExecutorAgent(
+      name="code_executor",
+      code_executor=DataAwareExecutor(work_dir=Path(EXECUTION_WORK_DIR)),
+      description="You run python code that should be provided to you by code_writer, if you don't have it, ask for it.",
+      sources=["code_writer"],
   )
 
   admin = AssistantAgent(
       name="admin",
-      model_client=writer_model,
+      model_client=thinking_client,
       system_message=ADMIN_PROMPT,
       model_client_stream=True,
   )
   termination = TextMentionTermination("APPROVE", sources=["admin"])
 
-  return SelectorGroupChat([admin, data_analyst, sql_coder, sql_executor], termination_condition=termination, model_client=writer_model)
+  return TrackableGroupChatManager([admin, code_writer, sql_coder, sql_executor, code_executor], termination_condition=termination, model_client=writer_model)

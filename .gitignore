@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 # Distribution / packaging
+.DS_Store
 .Python
 build/
 develop-eggs/
@@ -27,6 +28,9 @@ share/python-wheels/
 MANIFEST
 *.ipnyb
 tmp/
+run_tmp/
+tmp_*
+*.pkl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

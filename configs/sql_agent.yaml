@@ -1,6 +1,6 @@
 provider: autogen_ext.models.openai.OpenAIChatCompletionClient
 config:
-  model: model-coder
+  model: model-sql
   base_url: http://litellm:4000/v1/
   temperature: 0
   cache_seed: 42
