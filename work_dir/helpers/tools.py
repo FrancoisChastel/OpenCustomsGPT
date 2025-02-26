@@ -31,6 +31,7 @@ class FunctionResult(Enum):
 class OutputType(Enum):
     SQL = "SQL"
     PLOT = "PLOT"
+    STRING = "STRING"
     DATAFRAME = "DATAFRAME"
     PICKLED_DATAFRAME = "PICKLED_DATAFRAME"
     UNKNOWN = "UNKNOWN"
@@ -68,6 +69,11 @@ def serialize_variable(variable: Any) -> dict:
             "columns": variable.columns.tolist(),
             "first_10_rows": variable.head(10).to_dict(),
         }
+    elif isinstance(variable, str):
+        result = {
+            "value": variable,
+            "output_type": OutputType.STRING.value,
+        }        
     elif isinstance(variable, Figure):
         with open(path, "wb") as f:
             pickle.dump(variable, f)

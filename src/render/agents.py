@@ -57,7 +57,6 @@ class TrackableGroupChatManager(SelectorGroupChat):
         
         
 def render_message(message: AgentEvent | ChatMessage | TaskResult) -> None:
-    
     if isinstance(message, TextMessage):
         if message.source in ["user", "admin"]:
           MainMesage(author=message.source, content=message.content).render()
@@ -92,5 +91,7 @@ def render_serialize_variable(content: List[dict]) -> None:
             with open(Path(EXECUTION_WORK_DIR) / variable.get("file_path", ""), "rb") as f:
                 figure = pickle.load(f)
                 PlotlyMessage(author="code_executor", figure=figure).render()
+        elif variable.get("output_type") == OutputType.STRING.value:
+            FunctionMessage(author="code_executor", results=variable.get("value", "")).render()
         else:
             FunctionMessage(author="code_executor", results=json.dumps(variable)).render()

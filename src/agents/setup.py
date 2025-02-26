@@ -34,9 +34,13 @@ def setup_group_chat() -> TrackableGroupChatManager:
       model_config = yaml.safe_load(f)
   thinking_client = ChatCompletionClient.load_component(model_config)
 
+  with open("configs/sql_agent.yaml", "r") as f:
+      model_config = yaml.safe_load(f)
+  sql_client = ChatCompletionClient.load_component(model_config)
+
   sql_coder = AssistantAgent(
         name="sql_coder",
-        model_client=coder_model,
+        model_client=sql_client,
         system_message=get_sql_coder_prompt(),
         model_client_stream=True,
     )

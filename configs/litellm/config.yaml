@@ -15,4 +15,14 @@ model_list:
     litellm_params:
       model: openai/gpt-4o-mini
       api_key: os.environ/OPENAI_API_KEY
+  - model_name: model-sql
+    litellm_params:
+      model: huggingface/Qwen/Qwen2.5-Coder-32B-Instruct
+      api_key: os.environ/HUGGINGFACE_API_KEY
+
+litellm_settings:
+  set_verbose: True
+  cache: True
+  cache_params:
+    type: local
 

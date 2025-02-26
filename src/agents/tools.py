@@ -35,6 +35,7 @@ class FunctionResult(Enum):
 class OutputType(Enum):
     SQL = "SQL"
     PLOT = "PLOT"
+    STRING = "STRING"
     DATAFRAME = "DATAFRAME"
     PICKLED_DATAFRAME = "PICKLED_DATAFRAME"
     UNKNOWN = "UNKNOWN"
@@ -70,6 +71,11 @@ def serialize_variable(variable: Any) -> dict:
             "file_path": str(relative_path),
             "output_type": OutputType.PLOT.value,
             "library": VisualizationLibrary.PLOTLY.value,
+        }
+    elif isinstance(variable, str):
+        result = {
+            "value": variable,
+            "output_type": OutputType.STRING.value,
         }
     else:
         result = {
